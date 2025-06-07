@@ -7,6 +7,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import { Construct } from 'constructs';
 
 interface InfrastructureStackProps extends cdk.StackProps {
@@ -26,6 +27,22 @@ export class InfrastructureStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+
+    // S3 bucket for CloudFront logs (only for prod)
+    let logsBucket: s3.Bucket | undefined;
+    if (environment === 'prod') {
+      logsBucket = new s3.Bucket(this, 'OndergrondLogsBucket', {
+        bucketName: `ondergrond-logs-${environment}-${cdk.Aws.ACCOUNT_ID}`,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+        lifecycleRules: [
+          {
+            id: 'DeleteOldLogs',
+            expiration: cdk.Duration.days(30), // Keep logs for 30 days
+          },
+        ],
+      });
+    }
 
     // Origin Access Control for secure CloudFront -> S3 access
     const originAccessControl = new cloudfront.S3OriginAccessControl(
@@ -75,6 +92,11 @@ export class InfrastructureStack extends cdk.Stack {
         },
       ],
       comment: `Ondergrond ${environment} distribution`,
+      // Enable logging for production
+      ...(logsBucket && {
+        logBucket: logsBucket,
+        logFilePrefix: `cloudfront-logs/${environment}/`,
+      }),
       // Conditionally add custom domain configuration
       ...(domainName &&
         certificate && {
@@ -114,6 +136,43 @@ export class InfrastructureStack extends cdk.Stack {
       })
     );
 
+    // Basic CloudWatch Alarms (only for production)
+    if (environment === 'prod') {
+      // Alarm for high error rate (4xx/5xx errors)
+
+      new cloudwatch.Alarm(this, 'HighErrorRate', {
+        metric: new cloudwatch.Metric({
+          namespace: 'AWS/CloudFront',
+          metricName: 'ErrorRate',
+          dimensionsMap: {
+            DistributionId: distribution.distributionId,
+          },
+          statistic: 'Average',
+        }),
+        threshold: 5, // Alert if error rate > 5%
+        evaluationPeriods: 2,
+        alarmDescription: `High error rate on ${domainName}`,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+
+      // Alarm for unusual traffic (optional)
+      new cloudwatch.Alarm(this, 'UnusualTraffic', {
+        metric: new cloudwatch.Metric({
+          namespace: 'AWS/CloudFront',
+          metricName: 'Requests',
+          dimensionsMap: {
+            DistributionId: distribution.distributionId,
+          },
+          statistic: 'Sum',
+          period: cdk.Duration.hours(1),
+        }),
+        threshold: 1000, // Alert if > 1000 requests/hour
+        evaluationPeriods: 1,
+        alarmDescription: `Unusual traffic spike on ${domainName}`,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+    }
+
     // Deploy built React app to S3
     new s3deploy.BucketDeployment(this, 'OndergrondDeployment', {
       sources: [s3deploy.Source.asset('../dist')],
@@ -139,5 +198,12 @@ export class InfrastructureStack extends cdk.Stack {
       value: websiteBucket.bucketName,
       description: `S3 bucket name for ${environment}`,
     });
+
+    if (logsBucket) {
+      new cdk.CfnOutput(this, 'LogsBucketName', {
+        value: logsBucket.bucketName,
+        description: `Logs bucket name for ${environment}`,
+      });
+    }
   }
 }
