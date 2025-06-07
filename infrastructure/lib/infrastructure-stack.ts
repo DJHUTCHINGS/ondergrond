@@ -138,6 +138,23 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Basic CloudWatch Alarms (only for production)
     if (environment === 'prod') {
+      logsBucket = new s3.Bucket(this, 'OndergrondLogsBucket', {
+        bucketName: `ondergrond-logs-${environment}-${cdk.Aws.ACCOUNT_ID}`,
+        blockPublicAccess: new s3.BlockPublicAccess({
+          blockPublicAcls: false, // Allow CloudFront to set ACLs
+          ignorePublicAcls: false, // Allow CloudFront to set ACLs
+          blockPublicPolicy: true, // Still block public policies
+          restrictPublicBuckets: true, // Still restrict public buckets
+        }),
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+        lifecycleRules: [
+          {
+            id: 'DeleteOldLogs',
+            expiration: cdk.Duration.days(30),
+          },
+        ],
+      });
+
       // Alarm for high error rate (4xx/5xx errors)
 
       new cloudwatch.Alarm(this, 'HighErrorRate', {
