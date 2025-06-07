@@ -25,7 +25,7 @@ const Home = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">box3</h3>
-            <p className="text-gray-600">Some stuff</p>
+            <p className="text-gray-600">Some more stuff</p>
           </div>
         </div>
       </div>
