@@ -28,27 +28,6 @@ export class InfrastructureStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // S3 bucket for CloudFront logs (only for prod)
-    let logsBucket: s3.Bucket | undefined;
-    if (environment === 'prod') {
-      logsBucket = new s3.Bucket(this, 'OndergrondLogsBucket', {
-        bucketName: `ondergrond-logs-${environment}-${cdk.Aws.ACCOUNT_ID}`,
-        blockPublicAccess: new s3.BlockPublicAccess({
-          blockPublicAcls: false, // Allow CloudFront to set ACLs
-          ignorePublicAcls: false, // Allow CloudFront to set ACLs
-          blockPublicPolicy: true, // Still block public policies
-          restrictPublicBuckets: true, // Still restrict public buckets
-        }),
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
-        lifecycleRules: [
-          {
-            id: 'DeleteOldLogs',
-            expiration: cdk.Duration.days(30),
-          },
-        ],
-      });
-    }
-
     // Origin Access Control for secure CloudFront -> S3 access
     const originAccessControl = new cloudfront.S3OriginAccessControl(
       this,
@@ -97,11 +76,7 @@ export class InfrastructureStack extends cdk.Stack {
         },
       ],
       comment: `Ondergrond ${environment} distribution`,
-      // Enable logging for production
-      ...(logsBucket && {
-        logBucket: logsBucket,
-        logFilePrefix: `cloudfront-logs/${environment}/`,
-      }),
+
       // Conditionally add custom domain configuration
       ...(domainName &&
         certificate && {
@@ -203,12 +178,5 @@ export class InfrastructureStack extends cdk.Stack {
       value: websiteBucket.bucketName,
       description: `S3 bucket name for ${environment}`,
     });
-
-    if (logsBucket) {
-      new cdk.CfnOutput(this, 'LogsBucketName', {
-        value: logsBucket.bucketName,
-        description: `Logs bucket name for ${environment}`,
-      });
-    }
   }
 }
