@@ -4,32 +4,56 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
 interface InfrastructureStackProps extends cdk.StackProps {
   environment: string;
+  domainName?: string;
 }
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { environment } = props;
+    const { environment, domainName } = props;
 
     // S3 bucket for static website (private, accessed via CloudFront)
     const websiteBucket = new s3.Bucket(this, 'OndergrondWebsiteBucket', {
       bucketName: `ondergrond-website-${environment}-${cdk.Aws.ACCOUNT_ID}`,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // Keep bucket private
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // For dev/testing
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Origin Access Control for secure CloudFront -> S3 access
-    const originAccessControl = new cloudfront.S3OriginAccessControl(this, 'OndergrondOAC', {
-      description: `OAC for Ondergrond website - ${environment}`,
-    });
+    const originAccessControl = new cloudfront.S3OriginAccessControl(
+      this,
+      'OndergrondOAC',
+      {
+        description: `OAC for Ondergrond website - ${environment}`,
+      }
+    );
 
-    // CloudFront distribution with OAC
-    const distribution = new cloudfront.Distribution(this, 'OndergrondDistribution', {
+    // Look up existing hosted zone
+    let hostedZone: route53.IHostedZone | undefined;
+    let certificate: acm.ICertificate | undefined;
+
+    if (domainName) {
+      hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
+        domainName: 'ondergrond.link',
+      });
+
+      // SSL Certificate (must be in us-east-1 for CloudFront)
+      certificate = new acm.Certificate(this, 'Certificate', {
+        domainName: domainName,
+        validation: acm.CertificateValidation.fromDns(hostedZone),
+      });
+    }
+
+    // CloudFront distribution with optional custom domain
+    const distributionProps: cloudfront.DistributionProps = {
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket, {
           originAccessControl,
@@ -42,16 +66,39 @@ export class InfrastructureStack extends cdk.Stack {
         {
           httpStatus: 404,
           responseHttpStatus: 200,
-          responsePagePath: '/index.html', // SPA routing support
+          responsePagePath: '/index.html',
         },
         {
           httpStatus: 403,
           responseHttpStatus: 200,
-          responsePagePath: '/index.html', // Handle S3 403s as SPA routes
+          responsePagePath: '/index.html',
         },
       ],
       comment: `Ondergrond ${environment} distribution`,
-    });
+      // Conditionally add custom domain configuration
+      ...(domainName &&
+        certificate && {
+          domainNames: [domainName],
+          certificate: certificate,
+        }),
+    };
+
+    const distribution = new cloudfront.Distribution(
+      this,
+      'OndergrondDistribution',
+      distributionProps
+    );
+
+    // Create DNS record if custom domain is used
+    if (domainName && hostedZone) {
+      new route53.ARecord(this, 'DomainRecord', {
+        zone: hostedZone,
+        recordName: domainName,
+        target: route53.RecordTarget.fromAlias(
+          new targets.CloudFrontTarget(distribution)
+        ),
+      });
+    }
 
     // Grant CloudFront access to S3 bucket
     websiteBucket.addToResourcePolicy(
@@ -72,13 +119,20 @@ export class InfrastructureStack extends cdk.Stack {
       sources: [s3deploy.Source.asset('../dist')],
       destinationBucket: websiteBucket,
       distribution: distribution,
-      distributionPaths: ['/*'], // Invalidate all CloudFront cache
+      distributionPaths: ['/*'],
     });
 
-    // Output the CloudFront URL
+    // Output the URLs
     new cdk.CfnOutput(this, 'WebsiteURL', {
-      value: `https://${distribution.domainName}`,
+      value: domainName
+        ? `https://${domainName}`
+        : `https://${distribution.domainName}`,
       description: `Ondergrond ${environment} website URL`,
+    });
+
+    new cdk.CfnOutput(this, 'CloudFrontURL', {
+      value: `https://${distribution.domainName}`,
+      description: `CloudFront distribution URL for ${environment}`,
     });
 
     new cdk.CfnOutput(this, 'BucketName', {
