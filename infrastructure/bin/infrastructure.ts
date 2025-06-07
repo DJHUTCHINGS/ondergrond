@@ -24,3 +24,13 @@ new InfrastructureStack(app, 'Ondergrond-Infrastructure-Staging', {
     region: process.env.CDK_DEFAULT_REGION,
   },
 });
+
+// Production environment with root domain
+new InfrastructureStack(app, 'Ondergrond-Infrastructure-Prod', {
+  environment: 'prod',
+  domainName: 'ondergrond.link',
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
+});

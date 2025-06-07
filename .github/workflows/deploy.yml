@@ -9,6 +9,8 @@ on:
     branches:
       - main
       - develop
+  release:
+    types: [published]  # Deploy to production on release
 
 jobs:
   test:
@@ -38,7 +40,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' || github.event_name == 'release'
     
     steps:
       - name: Checkout code
@@ -71,20 +73,31 @@ jobs:
       - name: Determine environment
         id: env
         run: |
-          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+            echo "stack_name=Ondergrond-Infrastructure-Prod" >> $GITHUB_OUTPUT
+            echo "description=Production deployment from release ${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          elif [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
             echo "environment=staging" >> $GITHUB_OUTPUT
             echo "stack_name=Ondergrond-Infrastructure-Staging" >> $GITHUB_OUTPUT
+            echo "description=Staging deployment from main branch" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
             echo "stack_name=Ondergrond-Infrastructure-Dev" >> $GITHUB_OUTPUT
+            echo "description=Development deployment from develop branch" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy infrastructure
         run: |
           cd infrastructure
+          echo "Deploying to ${{ steps.env.outputs.environment }} environment"
           npx cdk deploy ${{ steps.env.outputs.stack_name }} --require-approval never
 
       - name: Output deployment URL
         run: |
           cd infrastructure
-          aws cloudformation describe-stacks --stack-name ${{ steps.env.outputs.stack_name }} --query 'Stacks[0].Outputs'
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.env.outputs.description }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Details:" >> $GITHUB_STEP_SUMMARY
+          aws cloudformation describe-stacks --stack-name ${{ steps.env.outputs.stack_name }} --query 'Stacks[0].Outputs' >> $GITHUB_STEP_SUMMARY
