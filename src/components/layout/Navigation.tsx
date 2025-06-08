@@ -9,8 +9,17 @@ const Navigation = () => {
     <nav className="bg-white shadow-sm border-b" data-testid="topnav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-xl font-bold text-gray-900">
-            Ondergrond
+          <Link to="/" className="flex items-center space-x-3">
+            <img
+              src="/ondergrond-flag.svg"
+              alt="Ondergrond Flag"
+              className="h-8 w-auto"
+            />
+            <img
+              src="/ondergrond-wordmark.svg"
+              alt="Ondergrond"
+              className="h-6 w-auto"
+            />
           </Link>
 
           <div className="flex space-x-8">

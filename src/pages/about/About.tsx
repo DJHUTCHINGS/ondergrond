@@ -2,7 +2,8 @@ import { Container } from '../../components/container/Container';
 import { Grid } from '../../components/grid/Grid';
 import { LinkTo } from '../../components/link/LinkTo';
 
-const HEADER_CLASS = 'text-2xl font-semibold text-gray-900 mt-8 mb-4';
+export const CONTAINER_HEADER_CLASS =
+  'text-2xl font-semibold text-gray-900 mt-8 mb-4';
 
 const About = () => {
   const INTRO_TXT = `Ondergrond (Dutch for "underground" or "foundation") is a small online platform I use for hosting code projects.`;
@@ -18,7 +19,7 @@ const About = () => {
 
         <Grid columns={2}>
           <Container>
-            <h2 className={HEADER_CLASS}>Dave H</h2>
+            <h2 className={CONTAINER_HEADER_CLASS}>Dave H</h2>
 
             <p>
               David is a web developer in Washington, DC, currently working for
@@ -29,7 +30,7 @@ const About = () => {
           </Container>
 
           <Container>
-            <h2 className={HEADER_CLASS}>Links</h2>
+            <h2 className={CONTAINER_HEADER_CLASS}>Links</h2>
 
             <p>
               <LinkTo
@@ -60,7 +61,7 @@ const About = () => {
 
         <Grid columns={2}>
           <Container>
-            <h2 className={HEADER_CLASS}>Technical Stack</h2>
+            <h2 className={CONTAINER_HEADER_CLASS}>Technical Stack</h2>
 
             <ul className="space-y-2 text-gray-700">
               <li>
@@ -85,7 +86,7 @@ const About = () => {
           </Container>
 
           <Container>
-            <h2 className={HEADER_CLASS}>Future Plans</h2>
+            <h2 className={CONTAINER_HEADER_CLASS}>Future Plans</h2>
 
             <p className="text-gray-600 mb-4">
               This platform is designed to grow. Possibile features may include:

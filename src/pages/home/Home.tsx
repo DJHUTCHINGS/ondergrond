@@ -1,3 +1,6 @@
+import { Container } from '../../components/container/Container';
+import { CONTAINER_HEADER_CLASS } from '../about/About';
+
 const Home = () => {
   return (
     <div className="max-w-4xl mx-auto">
@@ -9,6 +12,10 @@ const Home = () => {
         >
           Welcome to the Ondergrond
         </h1>
+        <Container>
+          <h2 className={CONTAINER_HEADER_CLASS}>Features</h2>
+          <em>Coming soon.</em>
+        </Container>
       </div>
     </div>
   );
