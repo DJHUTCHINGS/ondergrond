@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import Home from './Home';
+import OndergrondHome from './Home';
 import { render, screen } from '@testing-library/react';
 
 describe('Home', () => {
   it('renders main heading', () => {
-    render(<Home />);
+    render(<OndergrondHome />);
 
     expect(screen.getByTestId('home-main-header')).toBeInTheDocument();
     expect(screen.getByTestId('home-main-header')).toHaveTextContent(
@@ -13,7 +13,7 @@ describe('Home', () => {
   });
 
   it('renders without crashing', () => {
-    render(<Home />);
+    render(<OndergrondHome />);
 
     // Basic smoke test - component should render
     expect(document.body).toBeInTheDocument();

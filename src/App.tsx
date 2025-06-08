@@ -1,14 +1,8 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from 'react-router-dom';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
-import Layout from './components/layout/Layout';
-import Home from './pages/home/Home';
-import About from './pages/about/About';
+import Layout from './platform/layout/Layout';
 import { trackPageView } from './utils/analytics';
+import { OndergrondRoutes } from './platform/routes/OndergrondRoutes';
 
 // Analytics wrapper component that tracks page views
 function AnalyticsWrapper({ children }: { children: React.ReactNode }) {
@@ -27,10 +21,7 @@ function App() {
     <Router>
       <AnalyticsWrapper>
         <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
+          <OndergrondRoutes />
         </Layout>
       </AnalyticsWrapper>
     </Router>

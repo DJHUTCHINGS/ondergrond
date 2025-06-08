@@ -1,6 +1,6 @@
-import { Container } from '../../components/container/Container';
-import { Grid } from '../../components/grid/Grid';
-import { LinkTo } from '../../components/link/LinkTo';
+import { Container } from '../../../shared/ui/container/Container';
+import { Grid } from '../../../shared/ui/grid/Grid';
+import { LinkTo } from '../../../shared/ui/link/LinkTo';
 
 export const CONTAINER_HEADER_CLASS =
   'text-2xl font-semibold text-gray-900 mt-8 mb-4';

@@ -1,7 +1,7 @@
-import { Container } from '../../components/container/Container';
+import { Container } from '../../../shared/ui/container/Container';
 import { CONTAINER_HEADER_CLASS } from '../about/About';
 
-const Home = () => {
+const OndergrondHome = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center py-16">
@@ -21,4 +21,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default OndergrondHome;
