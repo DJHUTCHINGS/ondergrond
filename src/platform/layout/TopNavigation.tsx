@@ -1,9 +1,34 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import type { DeploymentStage } from '../../types/deployment-stage';
+import { X } from 'lucide-react';
 
-const Navigation = () => {
+const TopNavigation = () => {
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const fullUrl = window.location.href;
+
+  const [stage, setStage] = useState<DeploymentStage | undefined>(undefined);
+
+  const [showStage, setShowStage] = useState(true);
+
+  const checkDeployState = () => {
+    if (fullUrl.includes('localhost')) {
+      setStage('localHost');
+    } else if (fullUrl.includes('dev')) {
+      setStage('dev');
+    } else if (fullUrl.includes('staging')) {
+      setStage('staging');
+    } else {
+      setStage(undefined);
+    }
+  };
+
+  useEffect(() => {
+    checkDeployState();
+  }, [fullUrl]);
 
   return (
     <nav className="bg-white shadow-sm border-b" data-testid="topnav">
@@ -21,6 +46,17 @@ const Navigation = () => {
               className="h-6 w-auto"
             />
           </Link>
+
+          {stage && showStage && (
+            <div className="bg-yellow-200 rounded-md px-3 flex items-center">
+              <span>{stage}</span>
+              <X
+                size={16}
+                onClick={() => setShowStage(!showStage)}
+                className="ml-2"
+              />
+            </div>
+          )}
 
           <div className="flex space-x-8">
             <Link
@@ -50,4 +86,4 @@ const Navigation = () => {
   );
 };
 
-export default Navigation;
+export default TopNavigation;

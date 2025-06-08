@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import Navigation from './Navigation';
+import TopNavigation from './TopNavigation';
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,7 +8,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50" data-testid="layout">
-      <Navigation />
+      <TopNavigation />
       <main className="container mx-auto px-4 py-8">{children}</main>
     </div>
   );
