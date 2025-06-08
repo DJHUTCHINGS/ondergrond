@@ -6,7 +6,5 @@ interface Props {
 }
 
 export const Grid = ({ children, columns }: Props): JSX.Element => {
-  return (
-    <div className={`grid md:grid-cols-${columns} gap-8 mt-12`}>{children}</div>
-  );
+  return <div className={`grid md:grid-cols-${columns} gap-8`}>{children}</div>;
 };

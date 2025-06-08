@@ -1,12 +1,31 @@
+import { useState } from 'react';
 import { Container } from '../../components/container/Container';
 import { Grid } from '../../components/grid/Grid';
 import { Link } from '../../components/link/Link';
+import { X } from 'lucide-react';
 
 const Home = () => {
+  const [showAlert, setShowAlert] = useState(true);
+
+  const ALERT_TEXT = `Under Construction`;
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center py-16">
-        <div className="bg-orange-500 text-white p-4">Under Construction</div>
+        {showAlert && (
+          <div className="bg-yellow-400 text-white p-4 rounded-lg shadow-sm">
+            <Grid columns={3}>
+              <span> {ALERT_TEXT}</span>
+              <div></div>
+              <button
+                className="justify-self-end"
+                onClick={() => setShowAlert(!showAlert)}
+              >
+                <X />
+              </button>
+            </Grid>
+          </div>
+        )}
         <br />
         <h1
           className="text-4xl font-bold text-gray-900 mb-6"
