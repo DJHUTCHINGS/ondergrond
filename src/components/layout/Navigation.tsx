@@ -1,24 +1,24 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom';
 
 const Navigation = () => {
-  const location = useLocation()
+  const location = useLocation();
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white shadow-sm border-b" data-testid="topnav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-xl font-bold text-gray-900">
             Ondergrond
           </Link>
-          
+
           <div className="flex space-x-8">
             <Link
               to="/"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/') 
-                  ? 'text-blue-600 bg-blue-50' 
+                isActive('/')
+                  ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-700 hover:text-blue-600'
               }`}
             >
@@ -27,8 +27,8 @@ const Navigation = () => {
             <Link
               to="/about"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/about') 
-                  ? 'text-blue-600 bg-blue-50' 
+                isActive('/about')
+                  ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-700 hover:text-blue-600'
               }`}
             >
@@ -38,7 +38,7 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navigation
+export default Navigation;

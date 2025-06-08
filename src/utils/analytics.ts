@@ -1,5 +1,7 @@
 import ReactGA from 'react-ga4';
 
+//7JUN2025 - This is possibly no longer used
+
 const TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID;
 
 export const initGA = () => {

@@ -3,14 +3,14 @@ name: Deploy Ondergrond
 on:
   push:
     branches:
-      - main      # Deploy to staging
-      - develop   # Deploy to dev
+      - main # Deploy to staging
+      - develop # Deploy to dev
   pull_request:
     branches:
       - main
       - develop
   release:
-    types: [published]  # Deploy to production on release
+    types: [published] # Deploy to production on release
 
 jobs:
   test:
@@ -43,7 +43,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'release'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
