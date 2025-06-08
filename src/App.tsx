@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Layout from './platform/layout/Layout';
 import { trackPageView } from './utils/analytics';
 import { OndergrondRoutes } from './platform/routes/OndergrondRoutes';
+import { AuthProvider } from './shared/auth/AuthContext';
 
 // Analytics wrapper component that tracks page views
 function AnalyticsWrapper({ children }: { children: React.ReactNode }) {
@@ -18,13 +19,15 @@ function AnalyticsWrapper({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Router>
-      <AnalyticsWrapper>
-        <Layout>
-          <OndergrondRoutes />
-        </Layout>
-      </AnalyticsWrapper>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AnalyticsWrapper>
+          <Layout>
+            <OndergrondRoutes />
+          </Layout>
+        </AnalyticsWrapper>
+      </Router>
+    </AuthProvider>
   );
 }
 
