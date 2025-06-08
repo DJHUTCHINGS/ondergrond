@@ -1,24 +1,9 @@
-import { createContext, useState, type ReactNode } from 'react';
-
-interface UserIdentity {
-  id: string;
-  fullName: string;
-  email?: string;
-  avatar?: string;
-  preferences?: {
-    theme?: 'light' | 'dark';
-    notifications?: boolean;
-  };
-}
-
-interface AuthContextType {
-  user: UserIdentity;
-  updateUser: (updates: Partial<UserIdentity>) => void;
-  // Future auth methods (currently stubbed)
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
+import { useState, type ReactNode } from 'react';
+import {
+  AuthContext,
+  type UserIdentity,
+  type AuthContextType,
+} from './AuthContext';
 
 // Default/mock user for development
 const DEFAULT_USER: UserIdentity = {
@@ -30,10 +15,6 @@ const DEFAULT_USER: UserIdentity = {
     notifications: true,
   },
 };
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
 
 interface AuthProviderProps {
   children: ReactNode;

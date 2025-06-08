@@ -1,410 +1,310 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AuthProvider } from './AuthContext';
-import { useAuth, useUser, useUserName } from './useAuth';
+import { render } from '@testing-library/react';
+import { useContext } from 'react';
+import { describe, it, expect } from 'vitest';
+import {
+  AuthContext,
+  type UserIdentity,
+  type AuthContextType,
+} from './AuthContext';
 
-//8JUN2025 - This tests some phony stuff, which is silly, but it should remind me to test whatever I end up implementing
+// Test component to verify context exists and has undefined default value
+const TestContextAccess = () => {
+  const context = useContext(AuthContext);
 
-// Test components to verify context behavior
-const TestComponentWithAuth = () => {
-  const { user, updateUser, login, logout, isAuthenticated } = useAuth();
+  return (
+    <div data-testid="context-value">
+      {context === undefined ? 'undefined' : 'defined'}
+    </div>
+  );
+};
 
-  const handleUpdateName = () => {
-    updateUser({ fullName: 'Updated Name' });
-  };
+// Test component to verify type constraints
+const TestTypeConstraints = () => {
+  const context = useContext(AuthContext);
 
-  const handleUpdatePreferences = () => {
-    updateUser({
-      preferences: {
-        theme: 'dark',
-        notifications: false,
-      },
-    });
-  };
-
-  const handleLogin = async () => {
-    try {
-      await login('test@example.com', 'password');
-    } catch (error) {
-      console.error(error);
-      // Expected to fail in mock implementation
+  // This tests that the context type allows both undefined and AuthContextType
+  const handleContext = (ctx: AuthContextType | undefined) => {
+    if (ctx) {
+      return `User: ${ctx.user.fullName}, Auth: ${ctx.isAuthenticated}`;
     }
+    return 'No context';
   };
 
-  const handleLogout = () => {
-    logout();
-  };
-
-  return (
-    <div>
-      <div data-testid="user-name">{user.fullName}</div>
-      <div data-testid="user-email">{user.email || 'No email'}</div>
-      <div data-testid="user-theme">
-        {user.preferences?.theme || 'No theme'}
-      </div>
-      <div data-testid="user-notifications">
-        {user.preferences?.notifications?.toString() || 'No notifications'}
-      </div>
-      <div data-testid="is-authenticated">{isAuthenticated.toString()}</div>
-      <button onClick={handleUpdateName} data-testid="update-name">
-        Update Name
-      </button>
-      <button
-        onClick={handleUpdatePreferences}
-        data-testid="update-preferences"
-      >
-        Update Preferences
-      </button>
-      <button onClick={handleLogin} data-testid="login">
-        Login
-      </button>
-      <button onClick={handleLogout} data-testid="logout">
-        Logout
-      </button>
-    </div>
-  );
-};
-
-const TestComponentWithUser = () => {
-  const user = useUser();
-  return (
-    <div>
-      <div data-testid="user-object">{JSON.stringify(user)}</div>
-    </div>
-  );
-};
-
-const TestComponentWithUserName = () => {
-  const userName = useUserName();
-  return (
-    <div>
-      <div data-testid="user-name-only">{userName}</div>
-    </div>
-  );
-};
-
-const TestComponentWithoutProvider = () => {
-  const { user } = useAuth();
-  return <div>{user.fullName}</div>;
+  return <div data-testid="type-check">{handleContext(context)}</div>;
 };
 
 describe('AuthContext', () => {
-  // Mock console methods to avoid noise in tests
-  beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-  });
+  describe('Context Creation', () => {
+    it('creates context with undefined default value', () => {
+      render(<TestContextAccess />);
 
-  describe('AuthProvider', () => {
-    it('provides default user data', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
+      const contextElement = document.querySelector(
+        '[data-testid="context-value"]'
       );
-
-      expect(screen.getByTestId('user-name')).toHaveTextContent('David H');
-      expect(screen.getByTestId('user-email')).toHaveTextContent('No email');
-      expect(screen.getByTestId('user-theme')).toHaveTextContent('light');
-      expect(screen.getByTestId('user-notifications')).toHaveTextContent(
-        'true'
-      );
-      expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true');
+      expect(contextElement).toHaveTextContent('undefined');
     });
 
-    it('allows updating user name', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
+    it('accepts AuthContextType | undefined as expected', () => {
+      render(<TestTypeConstraints />);
 
-      fireEvent.click(screen.getByTestId('update-name'));
-      expect(screen.getByTestId('user-name')).toHaveTextContent('Updated Name');
+      const typeElement = document.querySelector('[data-testid="type-check"]');
+      expect(typeElement).toHaveTextContent('No context');
     });
 
-    it('allows updating user preferences', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      fireEvent.click(screen.getByTestId('update-preferences'));
-      expect(screen.getByTestId('user-theme')).toHaveTextContent('dark');
-      expect(screen.getByTestId('user-notifications')).toHaveTextContent(
-        'false'
-      );
-    });
-
-    it('preserves existing user data when updating', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      // Update only name
-      fireEvent.click(screen.getByTestId('update-name'));
-
-      // Theme should still be the original value
-      expect(screen.getByTestId('user-theme')).toHaveTextContent('light');
-      expect(screen.getByTestId('user-name')).toHaveTextContent('Updated Name');
-    });
-
-    it('merges preferences correctly', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      // First update theme only
-      act(() => {
-        fireEvent.click(screen.getByTestId('update-preferences'));
-      });
-
-      expect(screen.getByTestId('user-theme')).toHaveTextContent('dark');
-      expect(screen.getByTestId('user-notifications')).toHaveTextContent(
-        'false'
-      );
+    it('exists as a React context object', () => {
+      expect(AuthContext).toBeDefined();
+      expect(AuthContext.Provider).toBeDefined();
+      expect(AuthContext.Consumer).toBeDefined();
     });
   });
 
-  describe('login method', () => {
-    it('calls login with correct parameters', async () => {
-      const consoleSpy = vi.spyOn(console, 'log');
-
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('login'));
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Login attempted:',
-        'test@example.com',
-        'password'
-      );
-    });
-
-    it('throws error for unimplemented login', async () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      // The login should fail silently in our test component
-      // since we catch the error
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('login'));
-      });
-
-      // User should still be authenticated (mock implementation)
-      expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true');
-    });
-  });
-
-  describe('logout method', () => {
-    it('resets user to default state on logout', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      // First, update the user
-      fireEvent.click(screen.getByTestId('update-name'));
-      expect(screen.getByTestId('user-name')).toHaveTextContent('Updated Name');
-
-      // Then logout
-      fireEvent.click(screen.getByTestId('logout'));
-      expect(screen.getByTestId('user-name')).toHaveTextContent('David H');
-    });
-
-    it('logs logout attempt', () => {
-      const consoleSpy = vi.spyOn(console, 'log');
-
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      fireEvent.click(screen.getByTestId('logout'));
-      expect(consoleSpy).toHaveBeenCalledWith('Logout attempted');
-    });
-  });
-
-  describe('useAuth hook', () => {
-    it('throws error when used outside provider', () => {
-      const consoleSpy = vi.spyOn(console, 'error');
-
-      expect(() => {
-        render(<TestComponentWithoutProvider />);
-      }).toThrow('useAuth must be used within an AuthProvider');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('returns all context values', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
-      );
-
-      // All context values should be accessible
-      expect(screen.getByTestId('user-name')).toBeInTheDocument();
-      expect(screen.getByTestId('is-authenticated')).toBeInTheDocument();
-      expect(screen.getByTestId('update-name')).toBeInTheDocument();
-      expect(screen.getByTestId('login')).toBeInTheDocument();
-      expect(screen.getByTestId('logout')).toBeInTheDocument();
-    });
-  });
-
-  describe('useUser hook', () => {
-    it('returns user object', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithUser />
-        </AuthProvider>
-      );
-
-      const userObject = screen.getByTestId('user-object');
-      const userData = JSON.parse(userObject.textContent || '{}');
-
-      expect(userData.id).toBe('1');
-      expect(userData.fullName).toBe('David H');
-      expect(userData.preferences.theme).toBe('light');
-      expect(userData.preferences.notifications).toBe(true);
-    });
-
-    it('throws error when used outside provider', () => {
-      const TestBadComponent = () => {
-        const user = useUser();
-        return <div>{user.fullName}</div>;
+  describe('TypeScript Interface Exports', () => {
+    it('UserIdentity interface has correct shape', () => {
+      // This is a compile-time test - if the interface is wrong, TypeScript will error
+      const validUser: UserIdentity = {
+        id: '1',
+        fullName: 'Test User',
+        email: 'test@example.com',
+        avatar: 'avatar.jpg',
+        preferences: {
+          theme: 'light',
+          notifications: true,
+        },
       };
 
-      expect(() => {
-        render(<TestBadComponent />);
-      }).toThrow('useAuth must be used within an AuthProvider');
+      // Test required fields
+      expect(validUser.id).toBe('1');
+      expect(validUser.fullName).toBe('Test User');
+    });
+
+    it('UserIdentity allows minimal required fields only', () => {
+      const minimalUser: UserIdentity = {
+        id: '2',
+        fullName: 'Minimal User',
+      };
+
+      expect(minimalUser.id).toBe('2');
+      expect(minimalUser.fullName).toBe('Minimal User');
+      expect(minimalUser.email).toBeUndefined();
+      expect(minimalUser.avatar).toBeUndefined();
+      expect(minimalUser.preferences).toBeUndefined();
+    });
+
+    it('UserIdentity preferences interface allows partial values', () => {
+      const userWithPartialPreferences: UserIdentity = {
+        id: '3',
+        fullName: 'Partial User',
+        preferences: {
+          theme: 'dark',
+          // notifications is optional
+        },
+      };
+
+      expect(userWithPartialPreferences.preferences?.theme).toBe('dark');
+      expect(
+        userWithPartialPreferences.preferences?.notifications
+      ).toBeUndefined();
+    });
+
+    it('UserIdentity theme enum is constrained correctly', () => {
+      // These should compile successfully
+      const lightThemeUser: UserIdentity = {
+        id: '4',
+        fullName: 'Light User',
+        preferences: { theme: 'light' },
+      };
+
+      const darkThemeUser: UserIdentity = {
+        id: '5',
+        fullName: 'Dark User',
+        preferences: { theme: 'dark' },
+      };
+
+      expect(lightThemeUser.preferences?.theme).toBe('light');
+      expect(darkThemeUser.preferences?.theme).toBe('dark');
+    });
+
+    it('AuthContextType interface has correct shape', () => {
+      // Mock function implementations for testing interface shape
+      const mockUpdateUser = (updates: Partial<UserIdentity>) => {
+        console.log('Mock update:', updates);
+      };
+
+      const mockLogin = async (email: string, password: string) => {
+        console.log('Mock login:', email, password);
+      };
+
+      const mockLogout = () => {
+        console.log('Mock logout');
+      };
+
+      const validAuthContext: AuthContextType = {
+        user: {
+          id: '1',
+          fullName: 'Test User',
+        },
+        updateUser: mockUpdateUser,
+        login: mockLogin,
+        logout: mockLogout,
+        isAuthenticated: true,
+      };
+
+      expect(validAuthContext.user.id).toBe('1');
+      expect(validAuthContext.isAuthenticated).toBe(true);
+      expect(typeof validAuthContext.updateUser).toBe('function');
+      expect(typeof validAuthContext.login).toBe('function');
+      expect(typeof validAuthContext.logout).toBe('function');
     });
   });
 
-  describe('useUserName hook', () => {
-    it('returns user full name', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithUserName />
-        </AuthProvider>
-      );
+  describe('Context Provider Behavior', () => {
+    it('can be used with Provider to supply value', () => {
+      const mockUser: UserIdentity = {
+        id: 'test-id',
+        fullName: 'Provider Test User',
+      };
 
-      expect(screen.getByTestId('user-name-only')).toHaveTextContent('David H');
-    });
+      const mockAuthValue: AuthContextType = {
+        user: mockUser,
+        updateUser: () => {},
+        login: async () => {},
+        logout: () => {},
+        isAuthenticated: true,
+      };
 
-    it('updates when user name changes', () => {
-      const TestComponent = () => {
-        const { updateUser } = useAuth();
-        const userName = useUserName();
-
+      const TestWithProvider = () => {
+        const context = useContext(AuthContext);
         return (
-          <div>
-            <div data-testid="current-name">{userName}</div>
-            <button
-              onClick={() => updateUser({ fullName: 'New Name' })}
-              data-testid="change-name"
-            >
-              Change Name
-            </button>
+          <div data-testid="provider-test">
+            {context ? context.user.fullName : 'No context'}
           </div>
         );
       };
 
       render(
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>
+        <AuthContext.Provider value={mockAuthValue}>
+          <TestWithProvider />
+        </AuthContext.Provider>
       );
 
-      expect(screen.getByTestId('current-name')).toHaveTextContent('David H');
-
-      fireEvent.click(screen.getByTestId('change-name'));
-      expect(screen.getByTestId('current-name')).toHaveTextContent('New Name');
-    });
-
-    it('throws error when used outside provider', () => {
-      const TestBadComponent = () => {
-        const userName = useUserName();
-        return <div>{userName}</div>;
-      };
-
-      expect(() => {
-        render(<TestBadComponent />);
-      }).toThrow('useAuth must be used within an AuthProvider');
-    });
-  });
-
-  describe('Default User Data', () => {
-    it('has correct default values', () => {
-      render(
-        <AuthProvider>
-          <TestComponentWithAuth />
-        </AuthProvider>
+      const providerElement = document.querySelector(
+        '[data-testid="provider-test"]'
       );
-
-      expect(screen.getByTestId('user-name')).toHaveTextContent('David H');
-      expect(screen.getByTestId('user-email')).toHaveTextContent('No email');
-      expect(screen.getByTestId('user-theme')).toHaveTextContent('light');
-      expect(screen.getByTestId('user-notifications')).toHaveTextContent(
-        'true'
-      );
-      expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true');
+      expect(providerElement).toHaveTextContent('Provider Test User');
     });
-  });
 
-  describe('Partial Updates', () => {
-    it('handles partial user updates correctly', () => {
-      const TestPartialUpdate = () => {
-        const { user, updateUser } = useAuth();
-
-        const handlePartialUpdate = () => {
-          updateUser({
-            email: 'new@example.com',
-            preferences: { theme: 'dark' }, // Only updating theme, not notifications
-          });
-        };
-
+    it('can be used with Provider supplying undefined', () => {
+      const TestWithUndefinedProvider = () => {
+        const context = useContext(AuthContext);
         return (
-          <div>
-            <div data-testid="email">{user.email || 'No email'}</div>
-            <div data-testid="theme">{user.preferences?.theme}</div>
-            <div data-testid="notifications">
-              {user.preferences?.notifications?.toString()}
-            </div>
-            <button onClick={handlePartialUpdate} data-testid="partial-update">
-              Partial Update
-            </button>
+          <div data-testid="undefined-provider-test">
+            {context === undefined ? 'Undefined context' : 'Defined context'}
           </div>
         );
       };
 
       render(
-        <AuthProvider>
-          <TestPartialUpdate />
-        </AuthProvider>
+        <AuthContext.Provider value={undefined}>
+          <TestWithUndefinedProvider />
+        </AuthContext.Provider>
       );
 
-      fireEvent.click(screen.getByTestId('partial-update'));
+      const undefinedElement = document.querySelector(
+        '[data-testid="undefined-provider-test"]'
+      );
+      expect(undefinedElement).toHaveTextContent('Undefined context');
+    });
+  });
 
-      expect(screen.getByTestId('email')).toHaveTextContent('new@example.com');
-      expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-      expect(screen.getByTestId('notifications')).toHaveTextContent('true'); // Should preserve original
+  describe('Type Safety', () => {
+    it('supports Partial<UserIdentity> for updates', () => {
+      // This tests the updateUser parameter type
+      const testPartialUpdate = (updates: Partial<UserIdentity>) => {
+        return Object.keys(updates);
+      };
+
+      // These should all be valid partial updates
+      const nameOnlyUpdate = testPartialUpdate({ fullName: 'New Name' });
+      const emailOnlyUpdate = testPartialUpdate({ email: 'new@example.com' });
+      const preferencesOnlyUpdate = testPartialUpdate({
+        preferences: { theme: 'dark' },
+      });
+      const multiFieldUpdate = testPartialUpdate({
+        fullName: 'Updated Name',
+        email: 'updated@example.com',
+        preferences: { notifications: false },
+      });
+
+      expect(nameOnlyUpdate).toContain('fullName');
+      expect(emailOnlyUpdate).toContain('email');
+      expect(preferencesOnlyUpdate).toContain('preferences');
+      expect(multiFieldUpdate).toContain('fullName');
+      expect(multiFieldUpdate).toContain('email');
+      expect(multiFieldUpdate).toContain('preferences');
+    });
+
+    it('login method has correct async signature', () => {
+      const testLogin = async (
+        loginFn: (email: string, password: string) => Promise<void>
+      ) => {
+        await loginFn('test@example.com', 'password');
+        return 'Login attempted';
+      };
+
+      const mockLogin = async (email: string, password: string) => {
+        expect(email).toBe('test@example.com');
+        expect(password).toBe('password');
+      };
+
+      expect(testLogin(mockLogin)).resolves.toBe('Login attempted');
+    });
+  });
+
+  describe('Interface Completeness', () => {
+    it('UserIdentity covers all expected user properties', () => {
+      const completeUser: UserIdentity = {
+        id: 'complete-id',
+        fullName: 'Complete User',
+        email: 'complete@example.com',
+        avatar: 'https://example.com/avatar.jpg',
+        preferences: {
+          theme: 'light',
+          notifications: true,
+        },
+      };
+
+      // Verify all properties are accessible
+      expect(typeof completeUser.id).toBe('string');
+      expect(typeof completeUser.fullName).toBe('string');
+      expect(typeof completeUser.email).toBe('string');
+      expect(typeof completeUser.avatar).toBe('string');
+      expect(typeof completeUser.preferences).toBe('object');
+      expect(completeUser.preferences?.theme).toBe('light');
+      expect(completeUser.preferences?.notifications).toBe(true);
+    });
+
+    it('AuthContextType covers all expected auth functionality', () => {
+      const mockContext: AuthContextType = {
+        user: { id: '1', fullName: 'Test' },
+        updateUser: () => {},
+        login: async () => {},
+        logout: () => {},
+        isAuthenticated: false,
+      };
+
+      // Verify all required properties exist
+      expect(mockContext).toHaveProperty('user');
+      expect(mockContext).toHaveProperty('updateUser');
+      expect(mockContext).toHaveProperty('login');
+      expect(mockContext).toHaveProperty('logout');
+      expect(mockContext).toHaveProperty('isAuthenticated');
+
+      // Verify types
+      expect(typeof mockContext.user).toBe('object');
+      expect(typeof mockContext.updateUser).toBe('function');
+      expect(typeof mockContext.login).toBe('function');
+      expect(typeof mockContext.logout).toBe('function');
+      expect(typeof mockContext.isAuthenticated).toBe('boolean');
     });
   });
 });

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import Layout from './platform/layout/Layout';
 import { trackPageView } from './utils/analytics';
 import { OndergrondRoutes } from './platform/routes/OndergrondRoutes';
-import { AuthProvider } from './shared/auth/AuthContext';
+import { AuthProvider } from './shared/auth/AuthProvider';
 
 // Analytics wrapper component that tracks page views
 function AnalyticsWrapper({ children }: { children: React.ReactNode }) {
