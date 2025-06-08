@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { DeploymentStage } from '../../types/deployment-stage';
 import { X } from 'lucide-react';
@@ -14,7 +14,7 @@ const TopNavigation = () => {
 
   const [showStage, setShowStage] = useState(true);
 
-  const checkDeployState = () => {
+  const checkDeployState = useCallback(() => {
     if (fullUrl.includes('localhost')) {
       setStage('localHost');
     } else if (fullUrl.includes('dev')) {
@@ -24,11 +24,11 @@ const TopNavigation = () => {
     } else {
       setStage(undefined);
     }
-  };
+  }, [fullUrl]);
 
   useEffect(() => {
     checkDeployState();
-  }, [fullUrl]);
+  }, [fullUrl, checkDeployState]);
 
   return (
     <nav className="bg-white shadow-sm border-b" data-testid="topnav">
