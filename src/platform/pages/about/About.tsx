@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { Container } from '../../../shared/ui/container/Container';
 import { Grid } from '../../../shared/ui/grid/Grid';
 import { LinkTo } from '../../../shared/ui/link/LinkTo';
@@ -5,7 +6,7 @@ import { LinkTo } from '../../../shared/ui/link/LinkTo';
 export const CONTAINER_HEADER_CLASS =
   'text-2xl font-semibold text-gray-900 mt-8 mb-4';
 
-const About = () => {
+const About = (): JSX.Element => {
   const INTRO_TXT = `Ondergrond (Dutch for "underground" or "foundation") is a small online platform I use for hosting code projects.`;
 
   return (

@@ -1,0 +1,10 @@
+.footer {
+  background-color: lime;
+  text-align: left;
+}
+
+.copyright {
+  font-size: 7px;
+  padding: 15px;
+  margin: 10px;
+}
