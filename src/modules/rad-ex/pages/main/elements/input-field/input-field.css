@@ -1,0 +1,9 @@
+.main-input {
+  font-size: 25px;
+  border-radius: 4px;
+  border: solid lightgray 1px;
+}
+
+.input-label {
+  text-align: left;
+}
