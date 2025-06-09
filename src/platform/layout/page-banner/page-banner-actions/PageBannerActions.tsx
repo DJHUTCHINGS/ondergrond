@@ -1,7 +1,9 @@
 import type { JSX } from 'react';
-import './nav-bar.css';
+// import './nav-bar.css';
 
-const NavBar = (): JSX.Element => {
+//@TODO - Turn this into a reusable slot for page-level buttons in banner
+
+const PageBannerActions = (): JSX.Element => {
   return (
     <div className="nav-button">
       {/* Note that the classname test allows this to be turned off */}
@@ -10,4 +12,4 @@ const NavBar = (): JSX.Element => {
   );
 };
 
-export default NavBar;
+export default PageBannerActions;

@@ -4,7 +4,7 @@ import OndergrondHome from '../pages/home/Home';
 import About from '../pages/about/About';
 import NotFound from '../not-found/NotFound';
 import { UnfinishedProjects } from '../pages/projects/Projects';
-import { RadExPage } from '../../modules/rad-ex/pages/main/RadExMain';
+import { RadExPage } from '../../modules/radex/RadExPage';
 
 export const OndergrondRoutes = (): JSX.Element => {
   return (

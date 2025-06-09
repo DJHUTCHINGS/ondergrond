@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import './output-comments-box.css';
+// import './output-comments-box.css';
 
 interface Props {
   mainTestOutputComments: string[];

@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import './output-chars-box.css';
+// import './output-chars-box.css';
 import OutputCommentsBox from '../output-comments-box/output-comments-box';
 import ScoreDisplay from '../score-display/score-display';
 

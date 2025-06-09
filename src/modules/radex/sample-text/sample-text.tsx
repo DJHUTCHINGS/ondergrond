@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import './sample-text.css';
+// import './sample-text.css';
 
 const RadExSampleText = (): JSX.Element => {
   return (

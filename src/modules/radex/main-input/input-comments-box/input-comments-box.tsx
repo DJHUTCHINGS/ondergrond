@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import './input-comments-box.css';
+// import './input-comments-box.css';
 
 interface InputObj {
   rawInput: string;

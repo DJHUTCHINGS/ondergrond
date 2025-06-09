@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
-import OutputCharsBox from '../pages/main/elements/output-chars-box/output-chars-box';
+import OutputCharsBox from '../main-output/output-chars-box/output-chars-box';
+// import OutputCharsBox from '../pages/main/elements/output-chars-box/output-chars-box';
 // import OutputCommentsBox from '../output-comments-box/output-comments-box';; //@TODO - 8JUN2025 - do not erase
 // import ScoreDisplay from '../score-display/score-display'; //@TODO - 8JUN2025 - do not erase
 // import { tsLiteralType } from '@babel/types';

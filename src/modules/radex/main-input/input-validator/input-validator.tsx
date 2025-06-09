@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import RadExInputCommentsBox from '../input-comments-box/input-comments-box';
-import BasicTests from '../../../../word-tests/basic-tests';
+import BasicTests from '../../word-tests/basic-tests';
 
 interface Props {
   rawInput: string;
