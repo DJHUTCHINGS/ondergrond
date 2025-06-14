@@ -5,10 +5,18 @@ import { LinkTo } from '../../../shared/ui/link/LinkTo';
 export const UnfinishedProjects = (): JSX.Element => {
   return (
     <div className="max-w-3xl mx-auto">
-      <h2>Unfinished Projects</h2>
+      <br />
+      <h1>Unfinished Projects</h1>
+      <br />
       <Container>
-        <div>RAD EX PLACE HOLDER</div>
-        <LinkTo href="/redacted/radEx" label="Radical Exploder" />.
+        <ul>
+          <li>
+            <LinkTo href="/redacted/radEx" label="Radical Exploder" />
+          </li>
+          <li>
+            <LinkTo href="/redacted/sluce" label="Sluce" />
+          </li>
+        </ul>
       </Container>
     </div>
   );

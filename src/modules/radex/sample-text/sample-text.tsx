@@ -1,32 +1,38 @@
-import type { JSX } from 'react';
-// import './sample-text.css';
+import { useState, type JSX } from 'react';
+import { sampleWords } from './sample-words';
+import Button from '../../../shared/ui/button/Button';
 
 const RadExSampleText = (): JSX.Element => {
+  const [showWords, setShowWords] = useState(false);
+
   return (
     <div className="sample-text">
       <h4>Free samples!</h4>
-      <p>Don't know any Arabic? Try these words:</p>
-      <p>
-        (Some of these words are loan words and will not produce accurate
-        results.)
-      </p>
-      <p>
-        مدرسة سيستعملوها استقبال وتنظر واشنطن إلى تلك القوات باعتبارها حليفا
-        أساسيا في مواجهة مسلحي تنظيم الدولة عازلة تبلغ مساحتها كيلومترا على
-        الحدود مع سوريا، وإنها غير راضية عن تغطية مساحة موجة جديدة من اللاجئين
-        السوريين رجب عجائب و غرائب في عالم قنوات يوتيوب مغربية أردوغان نستطيع
-      </p>
-      <p>
-        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيم الْحَمْدُ لِلَّهِ رَبِّ
-        الْعَالَمِينِ
-      </p>
-      <p>
-        التحقيقات مسؤول بهجمات ممثلو المعلومات السعودية أسماه المرفوعة تورطها
-        الاستماع الإسلاميين مقتطعة يتهربون الولايات متهمين آخرين تراجعت المتحدة
-        دأب بالشؤون مأهولة أخرجته الاستخباراتية جواسيس صحفييها التحديات استقالته
-        انطلقت علمانية تساءلنا بحقوقهن رؤية الخطوتان للتخطيط الأرامل أطفالهن
-        الوعر يتأزم
-      </p>
+      {!showWords && (
+        <Button variant="ghost" onClick={() => setShowWords(true)}>
+          Show
+        </Button>
+      )}
+
+      {showWords && (
+        <>
+          <p>Don't know any Arabic? Try these words:</p>
+          <p>
+            (Some of these words are loan words and will not produce accurate
+            results.)
+          </p>
+          <div className="p-4 flex flex-wrap">
+            {sampleWords.map((word, index) => (
+              <span key={index} className="mr-2 mb-1">
+                {word.arabic}
+              </span>
+            ))}
+          </div>
+          <Button variant="ghost" onClick={() => setShowWords(false)}>
+            Hide
+          </Button>
+        </>
+      )}
     </div>
   );
 };

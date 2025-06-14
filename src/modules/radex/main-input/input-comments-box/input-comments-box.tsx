@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import { Grid } from '../../../../shared/ui/grid/Grid';
 // import './input-comments-box.css';
 
 interface InputObj {
@@ -43,16 +44,11 @@ const RadExInputCommentsBox = ({ inputObj }: Props): JSX.Element => {
     // score,
   } = inputObj;
 
-  console.log('testng the inputs comment box');
-  console.log(strippedInput);
-  console.log(taaMarbutah);
-
   // DISPLAY
   let rawInputDisplay: JSX.Element[] = [];
   if (rawInput !== '') {
     rawInputDisplay = [
       <div key="raw-input">
-        <h4>Notes about the input:</h4>
         <p>This original input is: {rawInput}.</p>
       </div>,
     ];
@@ -65,7 +61,7 @@ const RadExInputCommentsBox = ({ inputObj }: Props): JSX.Element => {
         This input to be assessed is: {strippedInput}.
       </p>,
     ];
-  } else if (strippedInput === '') {
+  } else if (rawInput.length > 0 && strippedInput === '') {
     assessedInputDisplay = [
       <p key="invalid-input">
         This input appears to not be valid Arabic characters.
@@ -87,18 +83,23 @@ const RadExInputCommentsBox = ({ inputObj }: Props): JSX.Element => {
     }
   }
 
-  const inputCommentsDisplay: JSX.Element[] = [];
+  const InputCommentsDisplay: JSX.Element[] = [];
   if (inputComments !== undefined) {
     for (let i = 0; i < inputComments.length; i++) {
-      inputCommentsDisplay.push(<li key={i}>{inputComments[i]}</li>);
+      InputCommentsDisplay.push(<li key={i}>{inputComments[i]}</li>);
     }
   }
 
   return (
     <div className="">
-      {rawInputDisplay}
-      {assessedInputDisplay}
-      <ul>{inputCommentsDisplay}</ul>
+      {rawInput && <h4>Notes about the input:</h4>}
+
+      <Grid columns={2}>
+        {rawInputDisplay}
+        {assessedInputDisplay}
+      </Grid>
+
+      <ul>{InputCommentsDisplay}</ul>
     </div>
   );
 };

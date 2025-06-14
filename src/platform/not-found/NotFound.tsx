@@ -20,7 +20,7 @@ const NotFound = () => {
             Page Not Found
           </h2>
           <p className="text-lg text-gray-600 max-w-md mx-auto">
-            Looks like this page has gone underground. <br />
+            Looks like this page has gone <em>ondergrond</em>. <br />
             Let's get you back to the surface.
           </p>
         </div>
